@@ -22,8 +22,8 @@ def run_model(input_df: pd.DataFrame, output_path: str) -> tuple:
     Save the model in joblib format, and test results for further evaluation.
 
     Args:
-        input_df (pd.DataFrame): Input model dataframe
-        output_path (str): Path to store the model file.
+        input_df: Input model dataframe
+        output_path: Path to store the model file.
     Returns:
         Tuple containing model and test results.
     """

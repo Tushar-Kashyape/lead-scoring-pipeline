@@ -20,8 +20,8 @@ def run_preprocessing(input_path: str, output_path: str) -> pd.DataFrame:
     Deduplication key: phone_number.
 
     Args:
-        input_path (str): Path to raw data file
-        output_path (str): Path to clean data file
+        input_path: Path to raw data file
+        output_path: Path to clean data file
 
     Returns:
         Clean dataframe with duplicate entries removed.

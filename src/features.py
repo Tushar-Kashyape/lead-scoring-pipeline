@@ -20,8 +20,8 @@ def run_feature_engineering(input_df: pd.DataFrame, output_path: str) -> pd.Data
     Transforms raw categorical strings into numbers and drop identifiers.
 
     Args:
-        input_df (pd.DataFrame): input clean dataframe
-        output_path (str): Path to model-suitable data file
+        input_df: input clean dataframe
+        output_path: Path to model-suitable data file
 
     Returns:
         Transformed dataframe.
