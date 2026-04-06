@@ -1,11 +1,23 @@
-import pandas as pd
+"""
+preprocess.py
+
+Identifies and removes duplicate lead entries from raw data.
+Deduplication key: phone_number.
+
+Usage:
+    Called from main.py as part of the pipeline.
+Output:
+    data/processed/leads_clean.csv
+"""
+
 import os
+import pandas as pd
 
 def run_preprocessing(input_path: str, output_path: str) -> pd.DataFrame:
     """
     Remove duplicate entries from raw data based on keys which don't change
     after creation. Save the updated clean dataframe separately.
-    Deduplication key: source_channel, city, property_type, budget_range, phone_verified.
+    Deduplication key: phone_number.
 
     Args:
         input_path (str): Path to raw data file
