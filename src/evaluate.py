@@ -2,8 +2,8 @@
 evaluate.py
 
 Evaluates model using test and predicted results across performance metrics.
-Evaluation suite: Classification report (Precision, Recall, F1 score), AUC-ROC score
-Saves results to output with execution details.
+Evaluation suite: Classification report (Precision, Recall, F1 score), AUC-ROC score,
+SHAP feature importance.Saves results to output with execution details.
 
 Usage:
     Called from main.py as part of the pipeline.
@@ -80,7 +80,17 @@ def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
     save_results(SHAP_OUTPUT_PATH, shap_result)
 
 
-def save_results(path:str, output_df:pd.DataFrame) -> None:
+def save_results(path: str, output_df: pd.DataFrame) -> None:
+    """
+    Append output DataFrame to CSV at given path.
+    Creates the file if it doesn't exist.
+
+    Args:
+        path: Path to save CSV file.
+        output_df: DataFrame to append.
+    Returns:
+        None
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
         df_shap = pd.read_csv(path)
