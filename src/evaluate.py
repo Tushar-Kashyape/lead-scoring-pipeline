@@ -15,27 +15,28 @@ import datetime
 
 import numpy as np
 import pandas as pd
+import shap
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, roc_auc_score
 
-def run_evaluate(model: XGBClassifier, test: pd.Series, predicted: np.ndarray,
-             output_path:str) -> None:
+
+def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
+                 y_pred: np.ndarray, output_path: str) -> None:
     """
     Evaluate model and results over evaluation suite.
     Save the results to outputs with execution details.
 
     Args:
         model: XGBoost classifier.
-        test: Pandas Series of test data.
-        predicted: Numpy array of predicted values.
-        output_path: Path to output directory.
+        X_test: DataFrame of test features.
+        y_test: Pandas Series of actual labels.
+        y_pred: Numpy array of predicted labels.
+        output_path: Path to save evaluation report.
     Returns:
         None
     """
-    # model reserved for SHAP explainability (stretch)
-
-    report_dict = classification_report(test, predicted, output_dict=True)
-    roc_auc = roc_auc_score(test, predicted)
+    report_dict = classification_report(y_test, y_pred, output_dict=True)
+    roc_auc = roc_auc_score(y_test, y_pred)
 
     row = {
         'timestamp': datetime.datetime.now(),
@@ -51,6 +52,18 @@ def run_evaluate(model: XGBClassifier, test: pd.Series, predicted: np.ndarray,
     print(f"F1        : {row['f1']:.4f}")
     print(f"Accuracy  : {row['accuracy']:.4f}")
     print(f"ROC-AUC   : {row['roc_auc']:.4f}")
+
+    # SHAP Explainability
+    explainer = shap.Explainer(model)
+    shap_values = explainer(X_test)
+
+    shap_importance = pd.DataFrame({
+        "features": X_test.columns,
+        "mean_abs_shap": np.abs(shap_values.values).mean(axis=0)
+    }).sort_values(by='mean_abs_shap', ascending=False)
+
+    print("\n Top features by SHAP importance:")
+    print(shap_importance.to_string(index=False))
 
     result = pd.DataFrame([row])
 

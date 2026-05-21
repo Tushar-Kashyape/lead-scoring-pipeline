@@ -10,9 +10,9 @@ def main():
 
     df_model = run_feature_engineering(df_clean, FEATURES_OUTPUT_PATH)
 
-    model, test, pred = run_model(df_model, MODEL_OUTPUT_PATH)
+    model, X_test, y_test, y_pred = run_model(df_model, MODEL_OUTPUT_PATH)
 
-    run_evaluate(model, test, pred, EVAL_OUTPUT_PATH)
+    run_evaluate(model, X_test, y_test, y_pred, EVAL_OUTPUT_PATH)
 
 if __name__ == '__main__':
     main()

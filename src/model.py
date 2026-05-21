@@ -42,4 +42,4 @@ def run_model(input_df: pd.DataFrame, output_path: str) -> tuple:
     print(f"Predicted conversion rate: {y_pred.mean():.2%}")
     print(f"Actual conversion rate: {y_test.mean():.2%}")
 
-    return model, y_test, y_pred
+    return model, X_test, y_test, y_pred
