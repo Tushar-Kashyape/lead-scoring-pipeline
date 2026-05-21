@@ -9,6 +9,7 @@ Usage:
     Called from main.py as part of the pipeline.
 Output:
     outputs/evaluation_report.csv
+    outputs/shap_importance.csv
 """
 import os
 import datetime
@@ -18,6 +19,8 @@ import pandas as pd
 import shap
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, roc_auc_score
+
+SHAP_OUTPUT_PATH = 'outputs/shap_importance.csv'
 
 
 def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
@@ -53,6 +56,9 @@ def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
     print(f"Accuracy  : {row['accuracy']:.4f}")
     print(f"ROC-AUC   : {row['roc_auc']:.4f}")
 
+    result = pd.DataFrame([row])
+    save_results(output_path, result)
+
     # SHAP Explainability
     explainer = shap.Explainer(model)
     shap_values = explainer(X_test)
@@ -65,12 +71,20 @@ def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
     print("\n Top features by SHAP importance:")
     print(shap_importance.to_string(index=False))
 
-    result = pd.DataFrame([row])
+    shap_row = {'timestamp': datetime.datetime.now()}
+    shap_row.update(
+        shap_importance.set_index('features')['mean_abs_shap'].to_dict()
+    )
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    if os.path.exists(output_path):
-        df_results = pd.read_csv(output_path)
-        df_results = pd.concat([df_results, result], ignore_index=True)
-        df_results.to_csv(output_path, index=False)
+    shap_result = pd.DataFrame([shap_row])
+    save_results(SHAP_OUTPUT_PATH, shap_result)
+
+
+def save_results(path:str, output_df:pd.DataFrame) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if os.path.exists(path):
+        df_shap = pd.read_csv(path)
+        df_shap = pd.concat([df_shap, output_df], ignore_index=True)
+        df_shap.to_csv(path, index=False)
     else:
-        result.to_csv(output_path, index=False)
+        output_df.to_csv(path, index=False)
