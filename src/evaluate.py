@@ -20,14 +20,15 @@ import shap
 
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, roc_auc_score, \
-    precision_recall_curve, f1_score
+    precision_recall_curve
 
-SHAP_OUTPUT_PATH = 'outputs/shap_importance.csv'
+SHAP_OUTPUT_PATH = "outputs/shap_importance.csv"
+SCORED_LEADS_PATH = "outputs/scored_leads.csv"
 RECALL_THRESHOLD = 0.85
 
 
 def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
-                 y_pred: np.ndarray, output_path: str) -> None:
+                 y_pred: np.ndarray, clean_data_path: str, output_path: str) -> None:
     """
     Evaluate model and results over evaluation suite.
     Save the results to outputs with execution details.
@@ -37,6 +38,7 @@ def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
         X_test: DataFrame of test features.
         y_test: Pandas Series of actual labels.
         y_pred: Numpy array of predicted labels.
+        clean_data_path: Path to cleaned data.
         output_path: Path to save evaluation report.
     Returns:
         None
@@ -96,6 +98,27 @@ def run_evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series,
 
     results = pd.DataFrame(rows)
     save_results(output_path, results)
+
+    # Lead Scoring
+    clean_df = pd.read_csv(clean_data_path)
+    scored_df = X_test.copy()
+    scored_df["conversion_probability"] = y_pred_proba.round(4)
+    scored_df["segment"] = pd.cut(
+        scored_df["conversion_probability"],
+        bins = [0, 0.4, 0.7, 1.0],
+        labels = ["cold", "warm", "hot"]
+    )
+    scored_df = scored_df.drop(columns=['source_channel', 'budget_range'])
+    scored_df = scored_df.join(
+        clean_df[["phone_number", "source_channel", "budget_range"]],
+        how="left"
+    )
+
+    scored_df = scored_df[["phone_number", "source_channel", "budget_range",
+                           "conversion_probability", "segment"]]
+    scored_df.to_csv(SCORED_LEADS_PATH, index=False)
+    print(f"Scored leads saved. Shape: {scored_df.shape}")
+    print(scored_df['segment'].value_counts())
 
     # SHAP Explainability
     explainer = shap.Explainer(model)
@@ -166,7 +189,7 @@ def save_results(path: str, output_df: pd.DataFrame) -> None:
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
-        df_shap = pd.read_csv(path)
-        output_df = pd.concat([df_shap, output_df], ignore_index=True)
+        shap_df = pd.read_csv(path)
+        output_df = pd.concat([shap_df, output_df], ignore_index=True)
 
     output_df.to_csv(path, index=False)

@@ -6,13 +6,13 @@ from src.preprocess import run_preprocessing
 from src.features import run_feature_engineering
 
 def main():
-    df_clean = run_preprocessing(INPUT_DATA_PATH, OUTPUT_DATA_PATH)
+    clean_df = run_preprocessing(INPUT_DATA_PATH, OUTPUT_DATA_PATH)
 
-    df_model = run_feature_engineering(df_clean, FEATURES_OUTPUT_PATH)
+    model_df = run_feature_engineering(clean_df, FEATURES_OUTPUT_PATH)
 
-    model, X_test, y_test, y_pred = run_model(df_model, MODEL_OUTPUT_PATH)
+    model, X_test, y_test, y_pred = run_model(model_df, MODEL_OUTPUT_PATH)
 
-    run_evaluate(model, X_test, y_test, y_pred, EVAL_OUTPUT_PATH)
+    run_evaluate(model, X_test, y_test, y_pred, OUTPUT_DATA_PATH, EVAL_OUTPUT_PATH)
 
 if __name__ == '__main__':
     main()
